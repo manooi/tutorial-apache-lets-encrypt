@@ -1,55 +1,53 @@
 # Apache + Let's encrypt
-This tutorial is a comprehensive guide for setting up both an Apache web server and Let's Encrypt SSL certificates on an EC2 instance running Ubuntu. It's divided into two parts:
+This tutorial is a comprehensive guide for setting up both an Apache web server and Let's Encrypt SSL certificates on an EC2 instance running Ubuntu.
 
 Prequisite: -
-- Up and running EC2 instance (Ubuntu 20-22) with associated Elastic IP.
-- Domain. Get one from domain registra if you don't have any. Please note that I will use riangber.com as my domain.
-- Basic knownledge of linux cli 😎
+- An up-and-running EC2 instance (Ubuntu 20-22) with an associated Elastic IP.
+- A domain. Obtain one from a domain registrar if you don't have any. Please note that I will use riangber.com as my domain.
+- Basic knowledge of the Linux CLI 😎
 
 ## Part 1 - Apache
 This section focuses on installing Apache on the EC2 instance and configuring it to serve a basic web page.
 
-reference & credit: https://www.digitalocean.com/community/tutorials/how-to-install-the-apache-web-server-on-ubuntu-20-04
+Reference & Credit: https://www.digitalocean.com/community/tutorials/how-to-install-the-apache-web-server-on-ubuntu-20-04
 
-### 1.1  - Package installation & firewall configuration
-Shows how to install Apache, configure the firewall (UFW) to allow necessary ports (like 80 and 443), and check if Apache is running.
+### 1.1  - Package Installation & Firewall Configuration
+Demonstrates how to install Apache, configure the firewall (UFW) to allow necessary ports (such as 80 and 443), and check if Apache is running.
 
-SSH to ec2 instance
+SSH to the EC2 instance:
 
 ```bash
 ssh ubuntu@<ip-address>
 
-# to access with specific private key
+# To access with a specific private key
 ssh -i your-private-key.pem ubuntu@<ip-address>
 ```
 
-Install apache
-
+Install Apache:
 ```bash
 sudo apt update
 
 sudo apt install apache2
 ```
 
-Configure ufw firewall
-
+Configure UFW firewall:
 ```bash
-# list available application profile
+# List available application profiles
 sudo ufw app list
 
-# allow port 22, 80 and 443
+# Allow ports 22, 80, and 443
 sudo ufw allow ssh
 sudo ufw allow 'Apache Full'
 
-# enable ufw if not already
+# Enable UFW if not already enabled
 sudo ufw enable
 sudo systemctl restart ufw
 
-# check firewall status
+# Check firewall status
 sudo ufw status
 ```
 
-Check if apache service is running
+Check if Apache service is running:
 ```bash
 sudo systemctl status apache2
 # Output
@@ -70,25 +68,25 @@ sudo systemctl status apache2
 # Dec 09 09:45:39 ip-172-31-1-234 systemd[1]: Started The Apache HTTP Server.
 ```
 
-Go to `http://<ip-address>` you should see something like this
+Visit `http://<ip-address>` you should see something like this:
 
 ![](img/apache.png)
 
 
 
 ### 1.2 - Setting up virtual host
-Guides through creating a directory for the domain, adding an index HTML file, setting up a virtual host for the domain, and enabling it while disabling the default Apache site.
+This section guides you through creating a directory for the domain, adding an index HTML file, setting up a virtual host for the domain, and enabling it while disabling the default Apache site.
 
-Create directory & html file
+Create a directory & HTML file:
 ```bash
-# create new directory and change ownership (from root to ubuntu)
+# Create a new directory and change ownership (from root to ubuntu)
 sudo mkdir /var/www/riangber.com
 sudo chown -R $USER:$USER /var/www/riangber.com
 
-# add new index.html file
+# Add a new index.html file
 sudo vim /var/www/riangber.com/index.html
 
-# content of index.html
+# Content of index.html
 <html>
     <head>
         <title>Welcome!</title>
@@ -99,7 +97,7 @@ sudo vim /var/www/riangber.com/index.html
 </html>
 ```
 
-Configure sites-avialble, sites-enabled
+Configure sites-available, sites-enabled:
 ```bash
 sudo vim /etc/apache2/sites-available/riangber.com.conf
 
@@ -113,25 +111,26 @@ sudo vim /etc/apache2/sites-available/riangber.com.conf
     CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 ```
-Enable our new site & disable default apache site
+
+Enable our new site & disable the default Apache site:
 ```bash
 sudo a2ensite riangber.com.conf
 sudo a2dissite 000-default.conf
 ```
 
-Test for error
+Test for errors:
 ```bash
 sudo apache2ctl configtest
 # Output
 # Syntax OK
 ```
 
-Restart apache
+Restart Apache:
 ```bash
 sudo systemctl restart apache2
 ```
 
-Result
+Result:
 ![](img/result.png)
 
 <br>
@@ -145,12 +144,12 @@ reference & credit: https://www.geeksforgeeks.org/using-certbot-manually-for-ssl
 ### 2.1 Install certbot & obtain certficate :)
 Demonstrates the installation of Certbot and manually obtaining a certificate from Let's Encrypt. It involves creating a DNS TXT record for domain verification, waiting for DNS propagation, and finally obtaining the SSL certificate.
 
-Install certbot
+Install certbot:
 ```bash
 sudo apt-get install certbot
 ```
 
-Manually obtain certificate
+Manually obtain certificate:
 
 ```bash
 sudo certbot certonly 
@@ -162,9 +161,14 @@ sudo certbot certonly
  --server https://acme-v02.api.letsencrypt.org/directory \
  --register-unsafely-without-email \
  --rsa-key-size 4096 \
+
+ # Or one liner
+ sudo certbot certonly --manual -d riangber.com --agree-tos --manual-public-ip-logging-ok --preferred-challenges dns-01 --server https://acme-v02.api.letsencrypt.org/directory --register-unsafely-without-email --rsa-key-size 4096
 ```
 
-Output
+
+
+Output:
 ```bash
  Saving debug log to /var/log/letsencrypt/letsencrypt.log
 Account registered.
@@ -240,19 +244,19 @@ If you like Certbot, please consider supporting our work by:
 
 ### 2.2  Enable ssl module on apache & configure ssl
 
-Enable ssl module
+Enable ssl module:
 ```bash
 sudo a2enmod ssl
 ```
 
-Go to apache2's sites-available
+Go to apache2's sites-available:
 ```bash
 cd /etc/apache2/sites-available
 ```
 
-Create new ssl config
+Create new ssl config:
 ```bash
-# copy it
+# Copy it
 sudo cp default-ssl.conf riangber.com-ssl.conf
 
 sudo vim riangber.com-ssl.conf
@@ -264,16 +268,16 @@ SSLCertificateFile /etc/letsencrypt/live/riangber.com/fullchain.pem
 SSLCertificateKeyFile /etc/letsencrypt/live/riangber.com/privkey.pem
 ```
 
-Enable site
+Enable site:
 ```bash
 sudo a2ensite riangber.com-ssl.conf
 ```
 
-Configure the existing virtual host
+Configure the existing virtual host:
 ```bash
 sudo vim riangber.com.conf
 
-# add virtual host for ssl
+# Add virtual host for ssl
 <VirtualHost *:443>
     ServerAdmin sirawit.mn@gmail.com
     ServerName riangber.com
@@ -289,7 +293,7 @@ sudo vim riangber.com.conf
 </VirtualHost>
 ```
 
-Restart apache
+Restart Apache:
 ```bash
 sudo systemctl restart apache2
 ```
