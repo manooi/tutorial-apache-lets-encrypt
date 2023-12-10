@@ -139,7 +139,7 @@ Result:
 ## Part 2 - Let's encrypt
 This part covers obtaining SSL certificates from Let's Encrypt and configuring Apache to use these certificates for secure HTTPS connections.
 
-reference & credit: https://www.geeksforgeeks.org/using-certbot-manually-for-ssl-certificates/
+Reference & Credit: https://www.geeksforgeeks.org/using-certbot-manually-for-ssl-certificates/
 
 ### 2.1 Install certbot & obtain certficate :)
 Demonstrates the installation of Certbot and manually obtaining a certificate from Let's Encrypt. It involves creating a DNS TXT record for domain verification, waiting for DNS propagation, and finally obtaining the SSL certificate.
@@ -152,7 +152,7 @@ sudo apt-get install certbot
 Manually obtain certificate:
 
 ```bash
-sudo certbot certonly 
+sudo certbot certonly  \
  --manual \
  -d riangber.com \
  --agree-tos \
