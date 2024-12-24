@@ -160,7 +160,7 @@ sudo certbot certonly  \
  --preferred-challenges dns-01 \
  --server https://acme-v02.api.letsencrypt.org/directory \
  --register-unsafely-without-email \
- --rsa-key-size 4096 \
+ --rsa-key-size 4096
 
  # Or one liner
  sudo certbot certonly --manual -d riangber.com --agree-tos --manual-public-ip-logging-ok --preferred-challenges dns-01 --server https://acme-v02.api.letsencrypt.org/directory --register-unsafely-without-email --rsa-key-size 4096
